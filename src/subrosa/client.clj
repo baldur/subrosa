@@ -1,6 +1,7 @@
 (ns subrosa.client
   (:require [subrosa.database :as db])
   (:use [clojure.contrib.condition :only [raise]]
+        [clojure.java.io]
         [subrosa.server]
         [subrosa.config :only [config]]))
 
@@ -102,7 +103,9 @@
                           (config :network))))
 
 (defn send-motd [channel]
-  (send-to-client channel 422 ":MOTD File is missing"))
+  (if (.exists (as-file "etc/motd"))
+    (send-to-client* channel (slurp "etc/motd"))
+    (send-to-client channel 422 ":MOTD File is missing")))
 
 (defn send-lusers [channel]
   (send-to-client channel 251
